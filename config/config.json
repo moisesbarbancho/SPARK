@@ -94,6 +94,6 @@
   ],
 
   "output_table": "default.flights",
-  "output_path": "C:/flights",
-  "output_partitions": 10
+  "output_partitions": 10,
+  "EXECUTION_ENVIRONMENT": "databricks"
 }
