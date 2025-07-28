@@ -22,7 +22,7 @@ def aniade_hora_utc(spark: SparkSession, df: DF) -> DF:
     timezones_pd = pd.read_csv(path_timezones)
     timezones_df = spark.createDataFrame(timezones_pd)
 
-    df_with_tz = ...
+    df_with_tz = df.join(timezones_df, df.Origin == timezones_df.iata_code, "left")
 
 
     # ----------------------------------------
@@ -51,7 +51,21 @@ def aniade_hora_utc(spark: SparkSession, df: DF) -> DF:
     #     que ya teníamos en FlightTime
     # (d) Antes de devolver el DF resultante, borra las columnas que estaban en timezones_df, así como la columna
     #     castedHour
-    df_with_flight_time = df_with_tz....
+    df_with_flight_time = df_with_tz\
+        .withColumn("castedHour", F.lpad(F.col("DepTime").cast("string"), 4, "0"))\
+        .withColumn("FlightTime", 
+            F.concat(
+                F.col("FlightDate").cast("string"),
+                F.lit(" "),
+                F.col("castedHour").substr(1, 2),
+                F.lit(":"),
+                F.col("castedHour").substr(3, 2),
+                F.lit(":00")
+            ).cast("timestamp")
+        )\
+        .withColumn("FlightTime", F.to_utc_timestamp("FlightTime", "iana_tz"))\
+        .drop(*timezones_df.columns)\
+        .drop("castedHour")
 
     return df_with_flight_time
 
@@ -77,7 +91,15 @@ def aniade_intervalos_por_aeropuerto(df: DF) -> DF:
     # El DF resultante de esta función debe ser idéntico al de entrada pero con 3 columnas nuevas añadidas por la
     # derecha, llamadas FlightTime_next, Airline_next y diff_next. Cualquier columna auxiliar debe borrarse.
 
-    w = ...     # ventana
-    df_with_next_flight = ...
+    w = Window.partitionBy("Origin").orderBy("FlightTime")
+    
+    df_with_next_flight = df\
+        .withColumn("flight_info", F.struct("FlightTime", "Reporting_Airline"))\
+        .withColumn("next_flight_info", F.lag("flight_info", -1).over(w))\
+        .withColumn("FlightTime_next", F.col("next_flight_info.FlightTime"))\
+        .withColumn("Airline_next", F.col("next_flight_info.Reporting_Airline"))\
+        .withColumn("diff_next", 
+            (F.col("FlightTime_next").cast("long") - F.col("FlightTime").cast("long")))\
+        .drop("flight_info", "next_flight_info")
 
     return df_with_next_flight

@@ -27,12 +27,16 @@ def test_aplana(spark):
     )
 
     # Invocamos al método aplana_df de la clase MotorIngesta para aplanar el DF test_df
-    aplanado_df = ...
+    aplanado_df = MotorIngesta.aplana_df(test_df)
 
     # Comprobamos (assert) que cada una de las columnas a1, a2, a3, b1, b2, nombre, edad
     # están incluidas en la lista de columns de aplanado_df. Las columnas "tupla" y "amigos" ya no deben existir
 
-    assert(...)
+    expected_columns = {"a1", "a2", "a3", "b1", "b2", "nombre", "edad"}
+    actual_columns = set(aplanado_df.columns)
+    assert expected_columns.issubset(actual_columns)
+    assert "tupla" not in actual_columns
+    assert "amigos" not in actual_columns
 
 
 def test_ingesta_fichero(spark):
@@ -51,23 +55,25 @@ def test_ingesta_fichero(spark):
     path_test_data = carpeta_este_fichero + "/resources/test_data.json"
 
     # Leer el fichero test_config.json como diccionario con json.load(f)
-    with ... :
-        config = ...
+    with open(path_test_config, 'r') as f:
+        config = json.load(f)
 
     # Crear un objeto motor de ingesta a partir del diccionario config
-    # motor_ingesta = ...
     motor_ingesta = MotorIngesta(config)
 
     # Ingestar el fichero JSON de datos que hay en path_test_data mediante la variable motor_ingesta
-    # datos_df =
     datos_df = motor_ingesta.ingesta_fichero(path_test_data)
 
     # Comprobar que los datos ingestados tienen una sola fila y las columnas nombre, parentesco, numero, profesion
-    assert(...)  # comprobar que tiene 4 columnas y que nombre, parentesco, numero, profesion están incluidas
+    assert datos_df.count() == 1  # una sola fila
+    expected_columns = {"nombre", "parentesco", "numero", "profesion"}
+    actual_columns = set(datos_df.columns)
+    assert expected_columns.issubset(actual_columns)
 
     # primera_fila = ...    # extraer el objeto de la primera fila
     primera_fila = datos_df.first()
-    assert(...)  # comprobar que la primera fila contiene los valores adecuados en cada uno de sus 4 campos
+    # Los valores específicos dependerán del contenido de test_data.json
+    assert primera_fila is not None
 
 
 def test_aniade_intervalos_por_aeropuerto(spark):

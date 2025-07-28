@@ -1,0 +1,8 @@
+pytest==8.3.4
+loguru==0.7.1
+
+# DEPENDENCIAS PARA TESTS (Segundo entorno - sin databricks-connect)
+pyspark==3.5.0
+
+# el paquete pandas no es necesario para ejecutar en Databricks porque ya viene instalado
+pandas==2.2.1
