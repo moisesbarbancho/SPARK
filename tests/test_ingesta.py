@@ -72,8 +72,12 @@ def test_ingesta_fichero(spark):
 
     # primera_fila = ...    # extraer el objeto de la primera fila
     primera_fila = datos_df.first()
-    # Los valores específicos dependerán del contenido de test_data.json
+    # Los valores específicos del contenido de test_data.json
     assert primera_fila is not None
+    assert primera_fila.nombre == "Juan"
+    assert primera_fila.parentesco == "sobrino"
+    assert primera_fila.numero == 3
+    assert primera_fila.profesion == "Ingeniero"
 
 
 def test_aniade_intervalos_por_aeropuerto(spark):
@@ -95,16 +99,20 @@ def test_aniade_intervalos_por_aeropuerto(spark):
     ).withColumn("FlightTime", F.col("FlightTime").cast("timestamp"))
 
     expected_df = spark.createDataFrame(
-        # Completa el DataFrame que deberíamos obtener
-    )
+        [("JFK", "2023-12-25 15:35:00", "American_Airlines", "2023-12-25 17:35:00", "Iberia", 7200)],
+        ["Origin", "FlightTime", "Reporting_Airline", "FlightTime_next", "Airline_next", "diff_next"]
+    ).withColumn("FlightTime", F.col("FlightTime").cast("timestamp")) \
+     .withColumn("FlightTime_next", F.col("FlightTime_next").cast("timestamp"))
 
-    expected_row = ...         # extraer la primera fila de expected_df
+    expected_row = expected_df.first()         # extraer la primera fila de expected_df
 
     result_df = aniade_intervalos_por_aeropuerto(test_df)
-    actual_row = ...           # extraer la primera fila de result_df
+    actual_row = result_df.sort("FlightTime").first()           # extraer la primera fila de result_df
 
     # Comparar los campos de ambos objetos Row
-    # assert(...)
+    assert actual_row.FlightTime_next == expected_row.FlightTime_next
+    assert actual_row.Airline_next == expected_row.Airline_next
+    assert actual_row.diff_next == expected_row.diff_next
 
 
 def test_aniade_hora_utc(spark):
@@ -124,14 +132,17 @@ def test_aniade_hora_utc(spark):
         ["Origin", "FlightDate", "DepTime"]
     )
 
+    # JFK usa America/New_York timezone, 15:35 local = 20:35 UTC (EST is UTC-5)
     expected_df = spark.createDataFrame(
-        # Completa el DataFrame que deberíamos obtener
-    )
+        [("JFK", "2023-12-25", 1535, "2023-12-25 20:35:00")],
+        ["Origin", "FlightDate", "DepTime", "FlightTime"]
+    ).withColumn("FlightTime", F.col("FlightTime").cast("timestamp"))
 
-    expected_row = None  # extraer la primera fila de expected_df
+    expected_row = expected_df.first()  # extraer la primera fila de expected_df
 
     result_df = aniade_hora_utc(spark, test_df)
-    actual_row = ...  # extraer la primera fila de result_df
+    actual_row = result_df.first()  # extraer la primera fila de result_df
 
     # Comparar los campos de ambos objetos Row
-    assert(...)
+    assert actual_row.FlightTime == expected_row.FlightTime
+    assert actual_row.Origin == expected_row.Origin
