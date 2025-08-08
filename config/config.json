@@ -96,5 +96,5 @@
   "output_table": "default.flights",
   "output_partitions": 10,
   "EXECUTION_ENVIRONMENT": "databricks",
-  "timezones_path": "/dbfs/FileStore/timezones_clean.csv"
+  "timezones_path": "dbfs:/FileStore/timezones.csv" 
 }
