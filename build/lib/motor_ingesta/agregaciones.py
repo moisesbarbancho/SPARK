@@ -4,22 +4,18 @@ from pyspark.sql import SparkSession, DataFrame as DF, functions as F, Window
 import pandas as pd
 
 
-def aniade_hora_utc(spark: SparkSession, df: DF) -> DF:
+def aniade_hora_utc(spark: SparkSession, df: DF, timezones_df: DF) -> DF:
     """
     Completa la documentación
     :param spark:
     :param df:
-    :param fichero_timezones:
+    :param timezones_df: DataFrame con las zonas horarias precargado
     :return:
     """
 
-    # Antes de empezar el ejercicio 2, debemos unir a los vuelos la zona horaria del aeropuerto de salida del vuelo,
-    # utilizando el CSV de timezones.csv y uniéndolo por código IATA (columna Origin de los datos con columna iata_code
-    # del CSV), dejando a null los timezones de los aeropuertos que no aparezcan en dicho fichero CSV si los hubiera.
-    # Primero deberemos leer dicho CSV infiriendo el esquema e indicando que las columnas contienen encabezados.
-
-    path_timezones = str(Path(__file__).parent) + "/resources/timezones.csv"
-    timezones_df = spark.read.option("header", "true").option("inferSchema", "true").csv(path_timezones)
+    # Unir a los vuelos la zona horaria del aeropuerto de salida del vuelo,
+    # utilizando el DataFrame de timezones precargado y uniéndolo por código IATA (columna Origin de los datos con columna iata_code
+    # del DataFrame), dejando a null los timezones de los aeropuertos que no aparezcan en dicho DataFrame si los hubiera.
 
     df_with_tz = df.join(timezones_df, df.Origin == timezones_df.iata_code, "left")
 
