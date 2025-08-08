@@ -1,5 +1,6 @@
 import json
 from datetime import timedelta
+from pathlib import Path
 from loguru import logger
 
 from pyspark.sql import SparkSession, functions as F
@@ -26,6 +27,14 @@ class FlujoDiario:
         else:
             # Usar SparkSession convencional para entorno local o producción
             self.spark = SparkSession.builder.getOrCreate()
+        
+        # Cargar y cachear tabla de timezones para evitar lecturas repetidas
+        path_timezones = str(Path(__file__).parent) + "/resources/timezones.csv"
+        self.timezones_df = self.spark.read\
+            .option("header", "true")\
+            .option("inferSchema", "true")\
+            .csv(path_timezones)\
+            .cache()
 
 
     def procesa_diario(self, data_file: str):
@@ -48,7 +57,7 @@ class FlujoDiario:
             flights_df = motor_ingesta.ingesta_fichero(data_file).cache()
 
             # Paso 1. Invocamos al método para añadir la hora de salida UTC
-            flights_with_utc = aniade_hora_utc(self.spark, flights_df)
+            flights_with_utc = aniade_hora_utc(self.spark, flights_df, self.timezones_df)
 
 
             # -----------------------------
