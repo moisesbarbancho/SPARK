@@ -29,12 +29,16 @@ class FlujoDiario:
             self.spark = SparkSession.builder.getOrCreate()
         
         # Cargar y cachear tabla de timezones para evitar lecturas repetidas
-        path_timezones = str(Path(__file__).parent) + "/resources/timezones.csv"
-        self.timezones_df = self.spark.read\
-            .option("header", "true")\
-            .option("inferSchema", "true")\
-            .csv(path_timezones)\
+        # Usar path configurado o fallback al archivo local
+        timezones_path = self.config.get("timezones_path", 
+                                        str(Path(__file__).parent) + "/resources/timezones.csv")
+        self.timezones_df = (
+            self.spark.read
+            .option("header", "true")
+            .option("inferSchema", "true")
+            .csv(timezones_path)
             .cache()
+        )
 
 
     def procesa_diario(self, data_file: str):
