@@ -4,23 +4,45 @@ from pyspark.sql import DataFrame as DF, functions as F, SparkSession
 
 
 class MotorIngesta:
-    """
-    Completar docstring
-    """
+      """
+      Motor de ingesta de datos para procesamiento de archivos JSON con PySpark.
+      
+      Esta clase proporciona funcionalidades para cargar, transformar y aplanar
+      estructuras de datos JSON complejas utilizando Apache Spark. Está diseñada
+      para trabajar tanto en entornos locales como distribuidos (Databricks).
+      
+      Funcionalidades principales:
+      - Ingesta de archivos JSON con esquemas configurables
+      - Aplanado automático de estructuras anidadas (structs y arrays)
+      - Transformación de datos basada en configuración externa
+      - Optimización para procesamiento distribuido en Spark
+      
+      Attributes:
+          config (dict): Configuración de columnas y esquema de datos
+          spark (SparkSession): Sesión de Spark para operaciones distribuidas
+      
+      Example:
+          >>> config = {"data_columns": [...]}
+          >>> motor = MotorIngesta(config)
+          >>> df = motor.ingesta_fichero("datos.json")
+      """
     def __init__(self, config: dict):
-        """
-        Completar docstring
-        :param config_file:
-        """
+      """
+      Inicializa el motor con configuración de columnas y tipos de datos.
+      
+      :param config: Configuración con 'data_columns' definiendo esquema JSON
+      :return: None
+      """
         self.config = config
         self.spark = SparkSession.builder.getOrCreate()
 
     def ingesta_fichero(self, json_path: str) -> DF:
-        """
-        Completar docstring
-        :param json_path:
-        :return:
-        """
+      """
+      Carga archivo JSON y retorna DataFrame aplanado según configuración.
+      
+      :param json_path: Ruta al archivo JSON a procesar
+      :return: DataFrame con estructura aplanada y esquema aplicado
+      """
         # Leemos el JSON como DF, tratando de inferir el esquema, y luego lo aplanamos.
         # Por último nos quedamos con las columnas indicadas en el fichero de configuración,
         # en la propiedad self.config["data_columns"], que es una lista de diccionarios. Debemos recorrer
