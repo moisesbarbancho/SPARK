@@ -10,7 +10,7 @@ def test_aplana(spark):
     """
     Testea que el aplanado se haga correctamente con un DF creado ad-hoc
     :param spark: SparkSession configurada localmente
-    :return:
+    :return: None. Valida que las columnas anidadas (struct/array) se aplanen correctamente
     """
     # La variable spark es un fixture - un objeto que se crea automáticamente al arrancar todos los tests
     # (consulta conftest.py)
@@ -44,7 +44,7 @@ def test_ingesta_fichero(spark):
     Comprueba que la ingesta de un fichero JSON de prueba se hace correctamente. Utiliza el fichero
     JSON existente en la carpeta tests/resources
     :param spark: SparkSession inicializada localmente
-    :return:
+    :return: None. Valida que la ingesta y aplanado de JSON produzca el DataFrame correcto
     """
     ##################################################
     #            EJERCICIO OPCIONAL
@@ -85,7 +85,7 @@ def test_aniade_intervalos_por_aeropuerto(spark):
     Comprueba que las variables añadidas con información del vuelo inmediatamente posterior que sale del mismo
     aeropuerto están bien calculadas
     :param spark: SparkSession inicializada localmente
-    :return:
+    :return: None. Valida que las columnas FlightTime_next, Airline_next y diff_next se añaden correctamente
     """
 
     ##################################################
@@ -119,13 +119,16 @@ def test_aniade_hora_utc(spark):
     """
     Comprueba que la columna FlightTime en la zona horaria UTC está correctamente calculada
     :param spark: SparkSession inicializada localmente
-    :return:
+    :return: None. Valida que la columna FlightTime en la zona horaria UTC está correctamente calculada
     """
     ##################################################
     #            EJERCICIO OPCIONAL
     ##################################################
 
-    fichero_timezones = str(Path(__file__).parent) + "../motor_ingesta/resources/timezones.csv"
+    fichero_timezones = str(Path(__file__).parent) + "/../motor_ingesta/resources/timezones.csv"
+
+    # Cargar el DataFrame de timezones
+    timezones_df = spark.read.csv(fichero_timezones, header=True, inferSchema=True)
 
     test_df = spark.createDataFrame(
         [("JFK", "2023-12-25", 1535)],
@@ -140,7 +143,7 @@ def test_aniade_hora_utc(spark):
 
     expected_row = expected_df.first()  # extraer la primera fila de expected_df
 
-    result_df = aniade_hora_utc(spark, test_df)
+    result_df = aniade_hora_utc(spark, test_df, timezones_df)
     actual_row = result_df.first()  # extraer la primera fila de result_df
 
     # Comparar los campos de ambos objetos Row
