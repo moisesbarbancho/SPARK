@@ -1,5 +1,6 @@
 README.md
 setup.py
+motor_ingesta/README_alumno.md
 motor_ingesta/__init__.py
 motor_ingesta/agregaciones.py
 motor_ingesta/flujo_diario.py
@@ -10,4 +11,8 @@ motor_ingesta.egg-info/dependency_links.txt
 motor_ingesta.egg-info/top_level.txt
 motor_ingesta/resources/__init__.py
 motor_ingesta/resources/timezones.csv
+motor_ingesta/tests/conftest.py
+motor_ingesta/tests/test_ingesta.py
+motor_ingesta/tests/resources/test_config.json
+motor_ingesta/tests/resources/test_data.json
 tests/test_ingesta.py

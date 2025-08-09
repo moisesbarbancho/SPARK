@@ -6,11 +6,19 @@ import pandas as pd
 
 def aniade_hora_utc(spark: SparkSession, df: DF, timezones_df: DF) -> DF:
     """
-    Completa la documentación
-    :param spark:
-    :param df:
-    :param timezones_df: DataFrame con las zonas horarias precargado
-    :return:
+    Convierte horarios locales de vuelos a UTC por aeropuerto de origen.
+      
+    Proceso de transformación:
+    1. Une df con timezones_df por código IATA (Origin = iata_code)
+    2. Construye timestamp local concatenando FlightDate + DepTime formateado
+    3. Aplica F.to_utc_timestamp() usando zona horaria específica del aeropuerto
+    4. Limpia columnas auxiliares y de timezone
+      
+    :param spark: SparkSession activa para operaciones distribuidas
+    :param df: DataFrame de vuelos con Origin, FlightDate, DepTime
+    :param timezones_df: DataFrame con iata_code, iana_tz para conversión UTC
+    :return: DataFrame con nueva columna FlightTime (UTC timestamp)
+    :raises ValueError: Si faltan columnas requeridas en los DataFrames
     """
 
     # Unir a los vuelos la zona horaria del aeropuerto de salida del vuelo,
@@ -67,9 +75,28 @@ def aniade_hora_utc(spark: SparkSession, df: DF, timezones_df: DF) -> DF:
 
 def aniade_intervalos_por_aeropuerto(df: DF) -> DF:
     """
-    Completa la documentación
-    :param df:
-    :return:
+    Calcula intervalos temporales entre vuelos consecutivos del mismo aeropuerto.
+      
+    Esta función añade información sobre el vuelo que despega inmediatamente después
+    desde el mismo aeropuerto de origen. Utiliza funciones de ventana (Window) para
+    ordenar vuelos cronológicamente por aeropuerto y calcular diferencias temporales.
+      
+    Proceso de transformación:
+    1. Crea estructura con información de vuelo (FlightTime, Reporting_Airline)
+    2. Define ventana particionada por Origin y ordenada por FlightTime
+    3. Aplica F.lag(-1) para obtener información del siguiente vuelo
+    4. Extrae campos individuales del siguiente vuelo (hora y aerolínea)
+    5. Calcula diferencia en segundos entre vuelo actual y siguiente
+    6. Limpia columnas auxiliares intermedias
+      
+    Columnas añadidas:
+    - FlightTime_next: Timestamp del siguiente vuelo desde el mismo aeropuerto
+    - Airline_next: Aerolínea del siguiente vuelo desde el mismo aeropuerto  
+    - diff_next: Diferencia en segundos hasta el siguiente vuelo (long)
+      
+    :param df: DataFrame con vuelos conteniendo Origin, FlightTime, Reporting_Airline
+    :return: DataFrame original con 3 columnas adicionales de información del siguiente vuelo
+    :raises ValueError: Si faltan las columnas requeridas Origin, FlightTime, Reporting_Airline
     """
     # ----------------------------------------
     # FUNCIÓN PARA EL EJERCICIO 3 (2 puntos)

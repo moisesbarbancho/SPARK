@@ -11,5 +11,8 @@ setup(
     url="https://github.com/nombrealumno",
     python_requires=">=3.8",
     packages=find_packages(),
-    package_data={"motor_ingesta": ["resources/*.csv"]}
+    package_data={
+        "motor_ingesta": ["resources/*.csv", "*.md", "tests/*.py", "tests/resources/*.json"]
+    },
+    include_package_data=True
 )

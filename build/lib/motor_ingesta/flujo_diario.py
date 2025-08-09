@@ -9,6 +9,30 @@ from .agregaciones import aniade_hora_utc, aniade_intervalos_por_aeropuerto
 
 
 class FlujoDiario:
+      """
+      Orquestador para el procesamiento diario de datos de vuelos.
+      
+      Esta clase gestiona el flujo completo de procesamiento de datos aeroportuarios
+      en lotes diarios, desde la ingesta hasta la persistencia. Coordina las 
+      operaciones de carga, transformación temporal, agregaciones y almacenamiento
+      optimizado para análisis posterior.
+      
+      Funcionalidades principales:
+      - Procesamiento batch diario de archivos JSON
+      - Aplicación de transformaciones temporales (UTC, intervalos)
+      - Agregaciones por aeropuerto y aerolínea
+      - Persistencia en formato Delta para consultas optimizadas
+      - Gestión automática de sesiones Spark
+      
+      Attributes:
+          config (dict): Configuración cargada desde archivo JSON
+          spark (SparkSession): Sesión de Spark configurada para el entorno
+          motor_ingesta (MotorIngesta): Motor de ingesta inicializado
+      
+      Example:
+          >>> flujo = FlujoDiario("config/prod_config.json")
+          >>> flujo.procesa_dia("2023-12-25")
+      """
 
     def __init__(self, config_file: str):
         """
@@ -42,11 +66,21 @@ class FlujoDiario:
 
 
     def procesa_diario(self, data_file: str):
-        """
-        Completa la documentación
-        :param data_file:
-        :return:
-        """
+      """
+      Procesa un lote diario completo de datos de vuelos.
+      
+      Pipeline de procesamiento:
+      - Carga e ingesta de datos JSON
+      - Conversión de horarios locales a UTC por aeropuerto
+      - Agregación de intervalos temporales entre vuelos consecutivos
+      - Cálculo de métricas por aeropuerto y aerolínea
+      - Almacenamiento en Delta Lake para consultas optimizadas
+      
+      :param data_file: Archivo JSON con datos de vuelos del día (formato YYYY-MM-DD.json)
+      :return: None. Resultados almacenados en sistema de persistencia configurado
+      :raises FileNotFoundError: Si el archivo de datos no existe
+      :raises ValueError: Si el formato de datos no es válido
+      """
 
         try:
             # Procesamiento diario: crea un nuevo objeto motor de ingesta con self.config, invoca a ingesta_fichero,
